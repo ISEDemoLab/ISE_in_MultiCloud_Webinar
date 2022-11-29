@@ -76,6 +76,7 @@ Use this page to create the Azure service principal:
 [Quickstart: Create an Azure service principal for Ansible](https://learn.microsoft.com/en-us/azure/developer/ansible/create-ansible-service-principal?tabs=azure-cli)
 > ⚠ There is a typo in the **Assign a role to the Azure service principal** section.  
 > 💡 The text reads **"Replace `<appID>` with the value provided from the output of `az ad sp create-for-rba` command."**
+
 > 💡 It should read **"Replace `<appID>` with the value provided from the output of `az ad sp create-for-rbac` command."** which is the command from the first step.
 
 ### Create an API Signing Key and default config file for OCI:
