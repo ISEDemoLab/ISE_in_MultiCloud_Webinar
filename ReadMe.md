@@ -2,7 +2,7 @@
 
 This repository is used for the ISE in a Hybrid Cloud Environment webinar that was given on December 6, 2022.  The purpose of the webinar was to show ISE deployed on all supported virtual environments (including public clouds) as part of a single deployment.
 
-https://github.com/ISEDemoLab/ISE_in_MultiCloud_Webinar/blob/main/images/ISE_in_MultiCloud_Webinar.png
+![ISE in MultiCloud Topology](https://github.com/ISEDemoLab/ISE_in_MultiCloud_Webinar/blob/main/images/ISE_in_MultiCloud_Webinar.png)
 
 The Ansible playbooks in this repository are listed in this table with their functions:
 |Playbook|Function|
