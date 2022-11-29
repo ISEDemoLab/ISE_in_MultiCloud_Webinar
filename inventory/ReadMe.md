@@ -23,6 +23,7 @@ https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
 |Azure|`<name>.`azure_rm.yaml|azure.azcollection.azure_rm|
 |OCI|`<name>.`oci.yaml|oracle.oci.oci|
 |VMware|`<name>.`vmware.yaml|community.vmware.vmware_vm_inventory|
+
 The important part of the inventory filenames is that they _**END**_ with the required part of the name.  the `<name>.` portion can be omitted and was done for `aws_ec2.yaml` and `azure_rm.yaml`. The filename extension can be either `.yaml` or `.yml` which is why it is sometimes noted as `.y[a]ml`.
 
 ### `keyed_groups`
