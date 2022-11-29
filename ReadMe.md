@@ -38,8 +38,8 @@ git clone https://github.com/ISEDemoLab/ISE_in_MultiCloud_Webinar.git
 ```
 
 Create your Python environment and install Ansible:
-> ⚠ Installing Ansible using Linux packages (`sudo apt install ansible`) may result in a much older version of Ansible being installed.
-> 💡 Installing Ansible with Python packages will get you the latest.
+> ⚠ Installing Ansible using Linux packages (`sudo apt install ansible`) may result in a much older version of Ansible being installed.  
+> 💡 Installing Ansible with Python packages will get you the latest.  
 > 💡 If you have any problems installing Python or Ansible, see [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 
 ```sh
