@@ -1,0 +1,181 @@
+---
+- name: Create ISE Deployment
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/main.yaml
+
+# ------------------------------------------------------------------------
+# Ⰹ ISE REST API: POST /api/v1/deployment/node/
+# Registers a Cisco ISE node to form a multi-node deployment.
+# Approximate execution time - 300 seconds.
+#
+# Roles: # use [] (no roles) for dedicated PSN
+# - Standalone
+# - PrimaryAdmin
+# - PrimaryMonitoring
+# - SecondaryAdmin
+# - SecondaryMonitoring
+# - PrimaryDedicatedMonitoring
+# - SecondaryDedicatedMonitoring
+#
+# Services: # use [] (no services) for dedicated PAN/MNT
+# - DeviceAdmin
+# - Profiler
+# - Session
+# - pxGrid
+# - pxGridCloud
+# - PassiveIdentity
+# - SXP
+# - TC-NAC
+# ------------------------------------------------------------------------
+  tasks:
+
+  # ------------------------------------------------------------------------
+  # Secondary MnT Node
+  # ------------------------------------------------------------------------
+
+    - name: Add ISE Node to the Deployment | SMnT
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_hyperv }}"
+        fqdn: "{{ ise_hyperv }}"
+        allowCertImport: true
+        roles: SecondaryMonitoring
+        services: []
+      register: node_registration
+
+  # ------------------------------------------------------------------------
+  # All other deployment PSNs. Services on PSNs can differ, but are
+  # usually enabled on pairs of PSNs for High Availability (HA).
+  # ------------------------------------------------------------------------
+
+    - name: Add ISE Node to the Deployment | PSN2 + pxGrid + pxGridCloud
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_oci }}"
+        fqdn: "{{ ise_oci }}"
+        allowCertImport: true
+        roles: []
+        services:
+          - Session
+          - Profiler
+          - pxGrid
+          - pxGridCloud
+
+    - name: Add ISE Node to the Deployment | PSN3 + DeviceAdmin
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_aws }}"
+        fqdn: "{{ ise_aws }}"
+        allowCertImport: true
+        roles: []
+        services:
+          - Session
+          - Profiler
+          - DeviceAdmin
+      register: node_registration
+
+    - name: Add ISE Node to the Deployment | PSN4 + DeviceAdmin
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_nutanix }}"
+        fqdn: "{{ ise_nutanix }}"
+        allowCertImport: true
+        roles: []
+        services:
+          - Session
+          - Profiler
+          - DeviceAdmin
+      register: node_registration
+
+  # ------------------------------------------------------------------------
+  # 🛈 Alternately, you can use a single task to register multiple nodes to
+  # the deployment.  This task uses the `loop` function to cycle through
+  # the list of nodes (`fqdn` starts each entry as denoted by the `-`).
+  #
+  # ⚠ To use the `loop` function, all ISE node passwords must be the
+  # ⚠ same.  If you haven't updated the password for any cloud-deployed
+  # ⚠ or ZTP-enabled nodes, do that first.
+  # ------------------------------------------------------------------------
+
+    # - name: Register the SMnT and remaining PSNs 
+    #   cisco.ise.personas_register_node:
+    #     primary_ip: 10.1.100.21
+    #     primary_username: "{{ ise_username }}"
+    #     primary_password: "{{ ise_password }}"
+    #     fqdn: "{{ item.fqdn }}"
+    #     username: "{{ ise_username }}"
+    #     password: "{{ ise_password }}"
+    #     roles: "{{ item.roles }}"
+    #     services: "{{ item.services }}"
+    #   loop:
+    #     - fqdn: "{{ ise_hyperv }}"
+    #       roles:
+    #         - SecondaryMonitoring
+    #       services: []
+    #     - fqdn: "{{ ise_oci }}"
+    #       roles: []
+    #       services:
+    #         - Session
+    #         - Profiler
+    #         - pxGrid
+    #         - pxGridCloud
+    #     - fqdn: "{{ ise_aws }}"
+    #       roles: []
+    #       services:
+    #         - Session
+    #         - Profiler
+    #         - DeviceAdmin
+    #     - fqdn: "{{ ise_nutanix }}"
+    #       roles: []
+    #       services:
+    #         - Session
+    #         - Profiler
+    #         - DeviceAdmin
+
+  # ------------------------------------------------------------------------
+  # Monitor the Sync status for all registered nodes.  Once all nodes 
+  # have the status `Connected`, the task completes.
+  # ------------------------------------------------------------------------
+
+    - name: Wait for ISE Node Synchronization
+      cisco.ise.node_deployment_info:
+        ise_hostname: "{{ ise_ppan }}" # PPAN!
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+      register: node_deployment_info
+      until: node_deployment_info.ise_response | selectattr('nodeStatus', '!=', 'Connected') | count == 0
+      delay: 30 # Default: 0. Seconds to delay between retries
+      retries: 240
+      timeout: 3600 # retries * delay. Default: 300. Stop checking after <seconds>

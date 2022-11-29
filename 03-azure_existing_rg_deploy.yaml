@@ -1,0 +1,55 @@
+---
+- name: Deploy an ISE VM in an existing Reaource Group
+  gather_facts: false
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/main.yaml
+
+
+
+#--------------------------------------------------------------------------
+# 💡To configure Azure for API access and to allow Ansible to configure
+# modules, create an Azure service principal.
+# 🛈 Instructions can be found at:
+# https://learn.microsoft.com/en-us/azure/developer/ansible/create-ansible-service-principal?tabs=azure-cli
+# 
+#--------------------------------------------------------------------------
+# This playbook will create a local SSH Key, then move on to create a
+# Resource Group (RG), Virtual Network (VN), Security Group (SG),
+# and two subnets (Private and Gateway).  The SG will be assigned to
+# the private subnet. 
+# 
+#--------------------------------------------------------------------------
+
+  tasks:
+  #--------------------------------------------------------------------------
+  # Create Resource Manager deployment using the JSON template
+  # to install ISE, NIC, and attach the existing storage account.
+  # The `template_link` will be the same for all ISE VMs,
+  # use the `parameters_link` to customize per ISE node.
+  #--------------------------------------------------------------------------
+
+    - name: Create an ISE Node in existing RG
+      azure_rm_deployment:
+        resource_group: "00-chmoreto"
+        name: "ISEinAzure"
+        template_link: 'https://isedemolab.com/endpoints/azure_existing_rg.json'
+        parameters_link: 'https://isedemolab.com/endpoints/azure_existing_rg.parameters.json'
+
+  #--------------------------------------------------------------------------
+  # While the Resource Manager Deployment does support tags,
+  # it does NOT assign them to the resources being deployed.
+  # Add tags to the ISE VM so you know exactly when it was created
+  # and by whom.
+  #--------------------------------------------------------------------------
+
+    - name: Add tags to ISE VM
+      azure_rm_virtualmachine:
+        resource_group: "00-chmoreto"
+        name: ise-azure2
+        tags:
+         project: "{{ project_name }}"
+         owner: "{{ owner }}"
+         started: "{{ '%Y-%m-%d T%H:%M:%S-%Z' | strftime }}"
+         role: PSN

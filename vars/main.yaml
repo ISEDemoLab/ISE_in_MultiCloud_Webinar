@@ -1,0 +1,111 @@
+---
+project_name: ISE_in_MultiCloud_Webinar
+owner: charlie
+ntp_server: time.nist.gov
+domain_name: securitydemo.net
+dns_server: 208.67.222.222 # Cisco Umbrella
+timezone: America/New_York
+ansible_python_interpreter: /home/charlie/ISE_in_MultiCloud_Webinar/.venv/bin/python
+
+#
+# ISE
+# The `cisco.ise` Ansible module does not currently use environment variables,
+# this section defines the environment variables for the playbooks.
+#
+ise_init_password: "{{ lookup('env','ISE_INIT_PASSWORD') }}"
+ise_username: "{{ lookup('env','ISE_REST_USERNAME') }}"
+ise_password: "{{ lookup('env','ISE_REST_PASSWORD') }}"
+ise_verify: "{{ lookup('env','ISE_VERIFY') | default(False, true) }}"
+ise_debug: "{{ lookup('env','ISE_DEBUG')  | default(False, true) }}"
+ise_ppan: "{{ lookup('env','iseadmin01') }}"
+ise_span: "{{ lookup('env','iseadmin02') }}"
+ise_azure: "{{ lookup('env','ise_azure') }}"
+ise_aws: "{{ lookup('env','ise_aws') }}"
+ise_oci: "{{ lookup('env','ise_oci') }}"
+ise_hyperv: "{{ lookup('env','ise_hyperv') }}"
+ise_kvm: "{{ lookup('env','ise_kvm') }}"
+ise_nutanix: "{{ lookup('env','ise_nutanix') }}"
+repo_user: iseftp
+repo_password: "{{ lookup('env','ISE_REST_PASSWORD') }}"
+
+#
+# Azure Stuff
+#
+az_region: westus
+az_resource_group: "rg_{{ project_name }}"
+az_vn_name: "vn_{{ project_name }}"
+az_vn_cidr: 192.168.110.0/23
+az_vn_private_subnet_cidr: 192.168.110.0/24
+az_vn_gateway_subnet_cidr: 192.168.111.0/24
+local_nw_cidr: 10.1.100.0/24
+
+#
+# OCI 
+#
+# Uses the config file at ~/.oci/config
+
+#
+# VMware
+# This project uses the ESXi host, not vCenter for the Ansible
+# playbooks.  To use vCenter Server, uncomment the necessary
+# lines.
+#
+# vcenter_username: "{{ lookup('env','VCENTER_USERNAME') }}"
+# vcenter_password: "{{ lookup('env','VCENTER_PASSWORD') }}"
+# vcenter_address: "{{ lookup('env','VCENTER') }}"
+# # vcenter_host: "{{ lookup('env','ESXI') }}"
+vcenter_host: "esxi.securitydemo.net"
+esxi_username: "{{ lookup('env','ESXI_USERNAME') }}"
+esxi_password: "{{ lookup('env','ESXI_PASSWORD') }}"
+datacenter: "ISE Demo Lab"
+datastore: "local-ds-p04"
+# datastore: "datastore1"
+# ProvisioningNetworkLabel: "VM Network"
+ProvisioningNetworkLabel: "VM-3k-access-v100-promiscuous"
+
+#
+# SSH
+# The `ssh_key_local` role creates an SSH keypair using the
+# project name as the key name.  I'm using my existing keypair, to
+# use the generated key, uncomment the `ssh_key_private_file` below
+# comment out the one that is in use.
+#
+ssh_key_directory: /home/charlie/.ssh
+ssh_key_name: "{{ project_name }}"
+# ssh_key_private_file: "{{ ssh_key_directory }}/{{ project_name }}"
+ssh_key_private_file: "{{ ssh_key_directory }}/id_rsa"
+ssh_key_public_file:  "{{ ssh_key_private_file }}.pub"
+
+#
+# Certificates
+# I've hosted my certificate information in ISE_in_MultiCloud_Webinar/.cert
+# but I have not included that folder in the Git Repository, for obvious
+# reasons. I've tested passing the plain text for the certificates
+# (formatted as indicated below) as environment variables, but that failed.
+# So did passing the commands
+# `"{{ lookup('file', '.cert/ISE_CERT.pem') | join('\n') }}"`
+# `"{{ lookup('file', '.cert/ISE_CA_CERT.txt') }}"`
+#
+# Only the format shown below was successful
+# 
+# 
+# 🛈 The `data`and `privateKeyData` fields require the plain-text contents
+# of the certificate file. Every space needs to be replaced with a 
+# newline escape sequence (\n) character.
+#
+# In your *nix terminal, use the command
+# `awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' <<your pem file>>`
+# to automatically format your .pem certificates and .pvk 
+# private key files to be read by ISE.
+# ----------------------------------------------------------------------------
+# The information included in that file looks like the below sample.
+#
+# cert_path: /home/charlie/ISE_in_MultiCloud_Webinar/.cert
+# certificate: "-----BEGIN CERTIFICATE-----\nMIIjfjJDFJKGlkrtodjkFllxaqCHYRoXzsMRDANBgkqhkiG9w0BAQsFADBy\nMQswCQYDVQN0MS4wLAYDVQQLEyVIeWRy\nYW50SUQgVHJ1c3RlZCBDZXJ0aWZpY2F0ZSBTZXJ2aWNlMR8wHQYDVQQDExZIeWRy\nYW50SUQgU2VydmVyIENBIE8xMB4XDTIyMDYxNTE4MzUyMVoXDTIzMDYxNTE4MzUy\nMFowcDEcMBoGA1UEAxMTd2Muc2VjdXJpdHlkZW1vLm5ldDEbMBkGA1UEChMSQ2lz\nY28gU3lzdGVtcyBJbmMuMREwDwYDVQQHEwhTYW4gSm9zZTETMBEGA1UECBMKQ2Fs\naWZvcm5pYTELMAkGA1UEBhMCVVMwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIK\nAoICAQCmxdB/Wdo9os9BwwEEUEZjz6TBhYvmSOFM01gn/feNal\n8aKu481KKAkjbEcL8plxJAQYWFOHyF+VSnFH+u38lD07kHtEKruTi4EKgl23osvP\nxhGCC6xwPsE4Y5hCO9cVdM89LewYZqliaFTfKtIAEY\nC0vNHPbhs0TmR4f+kTqIsFZ9gZRgVBVVw29gbwOBAhTgtBCAuzRjRd0g/ch+PPTq\n80Z3egrkj1IeubC/VmvVFBkM6rG8qPsynM2qZHjZUiJHBAxnD/UQBZ41CF1yYBZv\nSsm+Fdu9JFTE/NOt8ZA4O1fimygrEdfy7m30KlspGZAViLxFxjGtY+YhpHENA+fg\n6FDuq0IBhEEI/CfSVlXhDWBON5z3Coq8b7davD42mT0i9PDeUbcHXG/pl3uBnHN3\n0KZN5YppuDWtmO++SjrRioTsXFjVRRQAisy0TSXybCF/zVvZJ+lfQ\nWl6m5iz9MpoCDhkOcmJwjR9QDYw/18W9ZXV5ZsKUOGWmH904yAU0+8ebhZwP67gj\nsLZTW3+gZU4qrZfUZnGynK0QH3Dder+t8ZyA5h0f+VosxC1EXCQCTOi7b/2V7Rw+\nxuneBASxua/k4yRvOEzC0Ixu3aJlOWvReijzQIDAQABo4IENTCC\nBDEwDgYDVR0PAQH/BAQDAgWgMIGFBggrBgEFBQcBAQR5MHcwMAYIKwYBBQUHMAGG\nJGh0sLm9jc3AuaWRlbnRydXN0LmNvbTBDBggrBgEFBQcw\nAoY3aHR0cDovL3ZhbGlkYXRpb24uaWRlbnRydXN0LmNvbS9jZXJ0cy9oeWRyYW50\naWRjYU8xLnA3YzAfBgNVHSMEGp0t+TCCASYG\nA1UdIASCAR0wggEZMAwGCmCGSAGG+S8ABgMwggEHBgZngQwBAgIwgfwwQAYIKwYB\nBQUHAgEWNGh0dHBzOi8vc2VjdXJlLmlkZW50cnVzdC5jb20vY2VydGlmaWNhdGVz\nL3BvbGljeS90cy8wgbcGCCsGAQUFBwICMIGqDIGnVGhpcyBUcnVzdElEIFNlcnZl\nciBDZXJ0aWZpY2F0ZSBRo\nIElkZW5UcnVzdCdzIFRydXN0SUQgQ2VydGlmaWNhdGUgUG9saWN5IGZvdW5kIGF0\nIGh0dHBzOi8vc2VjdXJlLmlkZW50cnVzdC5jb20vY2VydGlmaWNhdGVzL3BvbGlj\neS90cy8wRgYDVR0fBD8wPTA7oDmgN4Y1aHR0cDovL3ZhbGlkYXRpb24uaWRlbnRy\ndXN0LmNvbS9jcmwvaHlkcmFudGlkY2FvMS5jcmwwRAYDVR0RBD0wO4IQc2VjdXJp\ndHlkZW1vLm5ldIISKi5zZWN1cml0eWRlbW8ubmV0ghN3Yy5zZWN1cml0eWRlbW8u\nbmV0MB0GA1UdDgQWBBSOLH4kOTiR7n1Mt1ym2NxDZ6retTAdBgNVHSUEFjAUBggr\n-----END CERTIFICATE-----\n"
+# private_key: "-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIJFJlkgklhgjkdigklJF:LghkkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQIIioY4P/vOF0CAggA\nMAwGCCCBBCaYRZxkgYZN8i/Ix3aOqwABIIJ\nUAiiAdkm2EN58Ln6VfR5ReYWjgxA8fiXlQcS6aDbupJLA67bLUBm6TtvpRMi5FZI\nz0rtblaDR1YOTdcC0yjUBbIHgC0cIR7AUvWICEf0Pe2UPvBW0p0TWrri3VuqM18N\nOKWCyVFKSUwd4Fcad0VM6NEr0LtIyEldfFFgaKS3Vh2Pf3DdeiEsMejoFM/bw3Pw\nayRCz7sQPqbQW9fEYJenrnLRg8VFtCFiy3hmhE4nqg773rT24VVCYQcQf3Ou8rfF\nsofsyh0hHdbv9W7bEdFZbknd/RRdKCL1sMD0XUMitB/lsbgH6ivuB5hHGnvJYBaf\nnGeLCoyVqb5XBlHmAUFOVbxQwaB+lf89ToOWH97FGLZ\nz64a7BW6C1CRLcQ1yLhi9iFsxHMxuIzWCrs5+kWcnlqW1T9xLFlLQWtJFI\nu5LgAisX99SHWYNZclnob2cwcMSSfQgGOYdwTwjYe1Nq8o+5LCQ3o7ySQLU2hZGX\naJvBR9z/5RgJ7h1fVsdSBF+fWHyxhQvnr/ZvtdD1JCl5LiEI0KRfzA\nL6IQkH7H4DiE8bLsbm/2SmVry8i9u8t+NlpcexvDfEcXt2/Wco0nlYJVJg2PjCxo\n1P6tvn65dlHtZvrWf383qRch9BhQdnnmjWAlxbFdCUf8mav3rnmVRTpOs0Flfi+f\nKt+ho4JSmPv68K46WItt7fN6z5zoKq0/Jtw1N5gvTB5qIQF0uTN0SE8tCYNt2VBJ\nNwm+VXZJCaqlOLX4HRs6O6UvzfpXzlaYqvicAgw9NYfCIG/lF169Yp\nzv3JJ2ohqiXS2657AqPOgbnt/6MjQgFAO/8Ca6AAh499wXPURD7d8gl2nzuGvuKT\nV+82mgld4mMvuNYx4u75N/gvqkMltJ3uQOrzXZs/Mon5xbzzf\nRJ8H1CqxlN30/nSiRQlmZxihng06RZlXJyyEsnVRMKOMMyVtjDWLExA1bMq+taXv\npp112oE1lHRw4wr+Vs2PrcBUsC1Y6zn2nNx1Sg6yKn1tAl+LY\nlwfIF7kqtB++ojqTg4iD8e1SUuhAi4OFcFUpEmPAUALnIrkX/sSLoOTNVKxRPKd4\n1w0OibhsBYQcnMoKPATZntGevwuNao0uWik6Nf4C2D6xrrIuFRA/OoeGCqelqtI9\nqDwkMS7B0mtiEBnaEH0Y5i71fPx0bBuR5TgZOXzmFIXFZURI4\n5tgeW4hdvj9cWuyfAJuj5HgwUiZkQ34/x7d1Mq+ESSEk6y6FM4b+Rb2VmadcT57N\nHdSaVB3ZVwPdhQdctFnYSPrKS9CnDFVqQHSikindCDH3ijTjrJzpxCPCdsI0uGzk\nkmevoC623j2CxRznCvYSdGkWTQpkRbIlBJXgwsBD+xCW/dg8aFhSvcAoY5BeJUPg\ndqpzdGOR7dk/pPeA5B975h0+JTcY22OLwGNGI4LU\nWuF2FodbVWzp51yGTKymjsi8BqcAc7p3/DUDyxLOjYXMYLAD1JY1VNK6NfCXjkeY\nXR4+9ZkcFhkoe6KGoSi9R+yTijA3z1Q38ZdNYuj8jAKpTcW4eODX66+OleJJnLt0\nkifP6yE3NA8PWpBdcsWBFqpZEvxjzbAUbHNR1fyfAkjqCj42ibGKlb4eb57fuH3o\nnWxs/WtwA6uZAout/40vvn1xbSxVRtFid4mj5u98JRA1Xyfq9zpP+GymQSmlN0r7\ng3Aag3JzeyP6omTBTrlKG3QST/RVNDhYNI08utrtv9T6GS1+No0Mg9zkOK/pPH8+\n-----END ENCRYPTED PRIVATE KEY-----\n"
+# ca_cert: "subject=/C=US/O=IdenTrust/OU=HydrantID Trusted Certificate Service/CN=HydrantID Server CA O1\nissuer=/C=US/O=IdenTrust/CN=IdenTrust Commercial Root CA 1\n-----BEGIN CERTIFICATE-----\nMIIG1jCCBL6gAwIBAjgjreuvn+kgjdfkrr4Y9x1zq7eDANBgkqhkiG9w0BAQsFADBK\nMQswCQYDVQQGEwJVUzESMBAGA1UEChMJSWRlblRydXN0MScwJQYDVQQDEx5JZGVu\nVHJ1c3QgQTkxMjEyMTY1NjE1WhcNMjkx\nMjEyMTY1NjE1WjByMQswCQYDVQQGEwJVUzESMBAGA1UEChMJSWRlblRydXN0MS4w\nLAYDVQQLEyVIeWRyYW50SUQgVHJ1c3RlZCBDZXJ0aWZpY2F0ZSBTZXJ2aWNlMR8w\nHQYDVQQDExZIeWRyYW50SUQgU2VydmVyIEN0BAQEF\nAAOCAQ8AMIIBCgKCAQEA6huZbDVWMGj7XbFZQWl+IeWhO8rl79MV4+7ZSj2\nLxos5e8za0H1JVVzTNPaup2Go438C5zeaqaGtyUshV8D0xwUiWyamspTao7PjjuC\nh81+tp9z76rp1irjNMh5o/zeJ0h3Kag5zQG9sfI7J7ihLnTFbArjNZIRaZnszOnu\nGa1nGmEYL5BV119LNVo5luWshvG/kifk9mHjtkA8LzVdsOkvCrmHBpzpD\no4qyPk2lDypq04IU48JUqhFrG4kvlPz+VO7sse0uxYXj81FdNb2qoJnvAjqV+Zj4\nNii8PIcuNGqghDjzrs2PW/gEhkaWDikhhSY7DjOLiQIDAQABo4ICjjCCAoowEgYD\nVR0TAQH/BAgwBgEB/wIBADAOBgNVHCCsGAQUFBwEBBH0w\nezAwBggrBgEFBQcwAYYkaHR0cDovL2NvbW1lcmNpYWwub2NzcC5pZGVudHJ1c3Qu\nY29tMEcGCCsGAQUFBzAChjtodHRwOi8vdmFsaWRhdGlvbi5pZGVudHJ1c3QuY29t\nL3JvvbW1lcmNpYWxyb290Y2ExLnA3YzAfBgNVHSMEGDAWgBTtRBnA0/AG\ni+6ke75C5yZUyI42djCCASsGA1UdIASCASIwggEeMIIBGwSgYI\nKwYBBQUHAgEWPmh0dHBzOi8vc2VjdXJlLmlkZW50cnVzdC5jb20vY2VydGlmaWNh\ndGVzL3BvbGljeS90cy9pbmRleC5odG1sMIHBBggrBgEFBQcCAjCBtAyBsVRoaXMg\nVHJ1c3RWNhdGUgaGFzIGJlZW4gaXNzdWVkIGluIGFj\nY29yZGFuY2Ugd2l0aCBJZGVuVHJ1c3QncyBUcnVzdElEIENlcnRpZmljYXRlIFBv\nbGljeSBmb3VuZCBhdCBodHRwczovL3NlY3VyZS5pZGVudHJ1c3QuY29tL2NlcnRp\nZmljYXRlcy9wb2xpY3kvdHMvaW5kZXguaHRtbDBKBgNVHR8EQzBBMD+gPaA7hjlo\ndHRwOi8vdudHJ1c3QuY29tL2NybC9jb21tZXJjaWFscm9v\ndGNhMS5jcmwwHQYDVR0OBBYEFIm4m7ae7fuwxr0N7GdOPKOSnS35MB0GA1UdJQQW\nMBQGCCsGAQUFBwMBBggrBgEFBQcDAjANBgkqhkiG9w0BAQsFAAOCAgEAdMrY9RYw\nNyVgzeOqqcbdIxy5gHRQFbh3RTuIi0fsnbEh3v7BN+I3zmXJq71gyLOzG9wvqCul\nXtLQNAZnrlSacXichYDV5zdcnbBrFH/CXt47oW4L+9yD5LPMKaSU5DP9DEu88ws+\nQAjzL6/q+hP+CLQh0/vr62HoEGS1+NyLfnJIN0RVcVDxBAwVqNF8MU5An98ZmHj4\nXaSPA6s2s+3794ULe6r2TzVXiLtun0JJ0kBZL3Mx0plhONvhq7jCsa6bYCF71DNs\n-----END CERTIFICATE-----\n"
+# pvk_password: "{{ lookup('env','ISE_CERT_PASSWORD') }}"
+# ----------------------------------------------------------------------------
+#
+# Note that the certificate data shown above is gibberish and will only
+# give an error if used.

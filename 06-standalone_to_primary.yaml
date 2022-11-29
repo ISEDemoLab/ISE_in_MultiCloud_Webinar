@@ -1,0 +1,33 @@
+---
+- name: Promote a standalone ISE node to Primary PAN
+  hosts: ise_nutanix
+  gather_facts: no
+  vars_files: vars/main.yaml
+  vars:
+  tasks:
+
+  # -------------------------------------------------------------------------
+  # Standalone ⮕ Primary: 🕑  ~60 seconds
+  # -------------------------------------------------------------------------
+  #
+  # Ⰹ ISE REST API: POST /api/v1/deployment/primary
+  # Promotes the node on which the API is invoked to the primary ISE PAN.
+  # Approximate execution time ~60 seconds!
+  # This will not trigger an ISE Application Server Restart!
+  #
+  # -------------------------------------------------------------------------
+
+    - name: Standalone to Primary | {{ inventory_hostname }}
+      cisco.ise.node_standalone_to_primary:
+        ise_hostname: "{{ inventory_hostname }}.securitydemo.net" # PPAN!
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+      register: standalone_to_primary
+      changed_when:
+        - standalone_to_primary is defined
+        - standalone_to_primary.ise_response is defined
+        - standalone_to_primary.ise_response.success is defined
+        - standalone_to_primary.ise_response.success.message is defined
+        - standalone_to_primary.ise_response.success.message is search("successfully")

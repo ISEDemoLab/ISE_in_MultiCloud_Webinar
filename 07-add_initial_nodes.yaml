@@ -1,0 +1,120 @@
+---
+- name: Create ISE Deployment
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/main.yaml
+
+# ------------------------------------------------------------------------
+# Ⰹ ISE REST API: POST /api/v1/deployment/node/
+# Registers a Cisco ISE node to form a multi-node deployment.
+# Approximate execution time - 300 seconds.
+#
+# Roles: # use [] (no roles) for dedicated PSN
+# - Standalone
+# - PrimaryAdmin
+# - PrimaryMonitoring
+# - SecondaryAdmin
+# - SecondaryMonitoring
+# - PrimaryDedicatedMonitoring
+# - SecondaryDedicatedMonitoring
+#
+# Services: # use [] (no services) for dedicated PAN/MNT
+# - DeviceAdmin
+# - Profiler
+# - Session
+# - pxGrid
+# - pxGridCloud
+# - PassiveIdentity
+# - SXP
+# - TC-NAC
+# ------------------------------------------------------------------------
+  tasks:
+    
+  # ------------------------------------------------------------------------
+  # Secondary Admin Node
+  # Add the secondary Admin Node with no additional roles or services
+  # ------------------------------------------------------------------------
+
+    - name: Add ISE Node to the Deployment | SPAN
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_span }}"
+        fqdn: "{{ ise_span }}"
+        allowCertImport: true
+        roles: SecondaryAdmin
+        services: []
+      register: node_registration
+
+  # ------------------------------------------------------------------------
+  # Primary MnT Node
+  # Add the primary MnT node with no additional roles or services
+  # ------------------------------------------------------------------------
+
+    - name: Add ISE Node to the Deployment | PMnT
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_kvm }}"
+        fqdn: "{{ ise_kvm }}"
+        allowCertImport: true
+        roles: PrimaryMonitoring
+        services: []
+      register: node_registration
+
+  # ------------------------------------------------------------------------
+  # First deployment PSN
+  # Add the first PSN of the deployment with no additional roles.
+  # Enable the following services:
+  # - Session
+  # - pxGrid
+  # - pxGridCloud
+  # ------------------------------------------------------------------------
+
+    - name: Add ISE Node to the Deployment | PSN1 + pxGrid + pxGridCloud
+      cisco.ise.node_deployment:
+        ise_hostname: "{{ ise_ppan }}" # ISE PAN
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+        state: present
+        userName: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: "{{ ise_azure }}"
+        fqdn: "{{ ise_azure }}"
+        allowCertImport: true
+        roles: []
+        services:
+          - Session
+          - Profiler
+          - pxGrid
+          - pxGridCloud
+      register: node_registration
+
+    
+    - name: Wait for ISE Node Synchronization
+      cisco.ise.node_deployment_info:
+        ise_hostname: "{{ ise_ppan }}" # PPAN!
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        ise_debug: "{{ ise_debug }}"
+      register: node_deployment_info
+      until: node_deployment_info.ise_response | selectattr('nodeStatus', '!=', 'Connected') | count == 0
+      delay: 30 # Default: 0. Seconds to delay between retries
+      retries: 120
+      timeout: 3600 # retries * delay. Default: 300. Stop checking after <seconds>

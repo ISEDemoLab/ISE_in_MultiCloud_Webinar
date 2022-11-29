@@ -1,0 +1,75 @@
+---
+- name: Create ISE Deployment
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/main.yaml
+
+  tasks:
+  - name: Create Node Group 'WestUS'
+    cisco.ise.node_group:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      state: present
+      description: string
+      # Optional settings:
+      # marCache:
+      #   query-attempts: 0
+      #   query-timeout: 0
+      #   replication-attempts: 0
+      #   replication-timeout: 0
+      name: WestUS
+
+  - name: Add PSN1 to Node Group 'WestUS'
+    cisco.ise.node_group_node_create:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      hostname: ise-azure
+      nodeGroupName: WestUS
+
+  - name: Add PSN2 to Node Group 'WestUS'
+    cisco.ise.node_group_node_create:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      hostname: ise-oci
+      nodeGroupName: WestUS
+
+  - name: Create Node Group 'EastUS'
+    cisco.ise.node_group:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      state: present
+      description: string
+      # Optional settings:
+      # marCache:
+      #   query-attempts: 0
+      #   query-timeout: 0
+      #   replication-attempts: 0
+      #   replication-timeout: 0
+      name: EastUS
+
+  - name: Add PSN3 to Node Group 'EastUS'
+    cisco.ise.node_group_node_create:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      hostname: ise-aws
+      nodeGroupName: EastUS
+
+  - name: Add PSN4 to Node Group 'EastUS'
+    cisco.ise.node_group_node_create:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      hostname: ise-nutanix
+      nodeGroupName: EastUS

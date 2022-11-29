@@ -1,0 +1,75 @@
+---
+- name: Configure PubkeyAuthentication on ISE node
+  gather_facts: no
+  hosts: ise-nutanix
+  vars_files:
+    - ~/ISE_in_MultiCloud_Webinar/vars/main.yaml
+
+  tasks:
+   
+  # ------------------------------------------------------------------------
+  # Create a repository from which you copy the public key file.
+  # CDROM and DISK repositories do not use the `userName` or `password`
+  # fields for the repository as shown in the DISK repository example.
+  # Supported Repository Types are:
+  # - CDROM
+  # - DISK
+  # - FTP
+  # - HTTP
+  # - HTTPS
+  # - NFS
+  # - SFTP
+  # - TFTP
+  # ------------------------------------------------------------------------
+
+
+    # - name: Create DISK Repository in ISE
+    #   cisco.ise.repository:
+    #     ise_hostname: "{{ ise_ppan }}"
+    #     ise_username: "{{ ise_username }}"
+    #     ise_password: "{{ ise_password }}"
+    #     ise_verify: "{{ ise_verify }}"
+    #     state: present
+    #     enablePki: false
+    #     name: ssh
+    #     # password: string # Not used for Disk repository
+    #     path: /
+    #     protocol: DISK
+    #     # serverName: string # Not used for Disk repository
+    #     # userName: string # Not used for Disk repository
+
+
+    - name: Create FTP Repository in ISE
+      cisco.ise.repository:
+        ise_hostname: "{{ inventory_hostname }}.securitydemo.net" # FQDN or IP Address
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        state: present
+        enablePki: false
+        name: sshkey
+        password: "{{ repo_password }}"
+        path: /
+        protocol: FTP
+        serverName: 10.1.100.6 # FQDN or IP Address
+        userName: "{{ repo_user }}" 
+
+  # ------------------------------------------------------------------------
+  # Enable `PubkeyAuthentication`
+  # ------------------------------------------------------------------------
+
+    - name: ISE CLI | enable PubkeyAuthentication
+      cisco.ios.ios_config:
+        lines:
+        - service sshd PubkeyAuthentication
+
+  # ------------------------------------------------------------------------
+  # Copy the the public key file to the logged in user profile.
+  # For multiple users to use Public Key Authentication, this will 
+  # need to be done for each user (log in as that user, copy their
+  # public key to their profile).
+  # ------------------------------------------------------------------------
+
+    - name: ISE CLI | Import Public Key to logged in user
+      ansible.netcommon.cli_command:
+        command: crypto key import id_rsa.pub repository sshkey

@@ -1,0 +1,70 @@
+---
+- name: Import certificates into ISE
+  gather_facts: no
+  hosts: localhost
+  # connection: local
+  vars_files:
+    - ~/ISE_in_MultiCloud_Webinar/vars/main.yaml
+    - ~/ISE_in_MultiCloud_Webinar/.cert/ise_certs.yaml
+
+  tasks:
+    #----------------------------------------------------------------------------
+    # 🛈 The `data`and `privateKeyData` fields require the plain-text 
+    # contents of the certificate file. Every space needs to be 
+    # replaced with a newline escape sequence (\n) character.
+    #
+    # In your *nix terminal, use the command
+    # awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' <<your pem file>>
+    # to automatically format your .pem certificates and .pvk 
+    # private key files to be read by ISE.
+    #
+    # ⚠ The CA Cert chain MUST be imported before you can import the 
+    # system certificate.
+    #----------------------------------------------------------------------------
+
+    - name: Import Hydrant CA Cert to Trusted Cert Store
+      cisco.ise.trusted_certificate_import:
+        ise_hostname: "{{ ise_nutanix }}"
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        allowBasicConstraintCAFalse: true
+        allowOutOfDateCert: true
+        allowSHA1Certificates: true
+        data: "{{ ca_cert }}"
+        description: string
+        name: HydrantID Server CA O1
+        trustForCertificateBasedAdminAuth: true
+        trustForCiscoServicesAuth: true
+        trustForClientAuth: true
+        trustForIseAuth: true
+        validateCertificateExtensions: true
+
+    
+    - name: Import securitydemo.net system certificate
+      cisco.ise.system_certificate_import:
+        ise_hostname: "{{ ise_nutanix }}"
+        ise_username: "{{ ise_username }}"
+        ise_password: "{{ ise_password }}"
+        ise_verify: "{{ ise_verify }}"
+        admin: true
+        allowExtendedValidity: true
+        allowOutOfDateCert: true
+        allowPortalTagTransferForSameSubject: true
+        allowReplacementOfCertificates: true
+        allowReplacementOfPortalGroupTag: true
+        allowRoleTransferForSameSubject: true
+        allowSHA1Certificates: true
+        allowWildCardCertificates: true
+        data: "{{ certificate }}"
+        eap: false
+        ims: false
+        name: securitydemo.net
+        password: "{{ pvk_password }}"
+        portal: true
+        portalGroupTag: "Default Portal Certificate Group"
+        privateKeyData: "{{ private_key }}"
+        pxgrid: false
+        radius: false
+        saml: false
+        validateCertificateExtensions: true

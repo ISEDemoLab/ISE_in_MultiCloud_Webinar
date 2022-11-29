@@ -1,0 +1,12 @@
+---
+- name: Enable ISE APIs
+  import_playbook: 01-enable_api.yaml
+
+# - name: Reset GUI Password
+#   import_playbook: 02-password_reset.yaml
+
+- name: Enable SSH Public Key Authentication
+  import_playbook: 03-PubkeyAuthentication.yaml
+
+- name: Install Trusted and System Certificates
+  import_playbook: 04-certificates.yaml

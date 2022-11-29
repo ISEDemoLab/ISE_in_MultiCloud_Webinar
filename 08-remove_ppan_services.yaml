@@ -1,0 +1,87 @@
+---
+- name: Create ISE Deployment
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/main.yaml
+
+# ------------------------------------------------------------------------
+# Ⰹ ISE REST API: POST /api/v1/deployment/node/
+# Registers a Cisco ISE node to form a multi-node deployment.
+# Approximate execution time - 300 seconds.
+#
+# Roles: # use [] (no roles) for dedicated PSN
+# - Standalone
+# - PrimaryAdmin
+# - PrimaryMonitoring
+# - SecondaryAdmin
+# - SecondaryMonitoring
+# - PrimaryDedicatedMonitoring
+# - SecondaryDedicatedMonitoring
+#
+# Services: # use [] (no services) for dedicated PAN/MNT
+# - DeviceAdmin
+# - Profiler
+# - Session
+# - pxGrid
+# - pxGridCloud
+# - PassiveIdentity
+# - SXP
+# - TC-NAC
+# ------------------------------------------------------------------------
+  tasks:
+    
+  # ------------------------------------------------------------------------
+  # Update services on Primary Admin Node
+  # Now that there is a dedicated MnT and a PSN in the deployment,
+  # remove the roles other than PrimaryAdmin and remove all services.
+  # ⚠ If you attempt this without an MnT or another PSN, the removal
+  # of roles and services will fail.
+  # ------------------------------------------------------------------------
+
+    
+    - name: Update Roles and Services for the PPAN | {{ ise_ppan }}
+      cisco.ise.personas_update_roles_services:
+        ip: 10.1.100.21 # PPAN!
+        ise_verify: "{{ ise_verify }}"
+        username: "{{ ise_username }}"
+        password: "{{ ise_password }}"
+        hostname: iseadmin01 # MUST use the hostname here, fqdn will fail!
+        roles: 
+        - PrimaryAdmin
+        services: 
+        - []
+      register: ise_node_update
+
+  # ------------------------------------------------------------------------
+  # ⚠ Before I figured out that passing the FQDN in the `hostname` 
+  # ⚠ field would cause the module above to fail, I created a task
+  # ⚠ to accomplish the results I wanted using the API request.
+  # 🛈 I've left this in to show the format for initiating 
+  # 🛈 API requests through Ansible Playbooks.  The reverse is shown in
+  # 🛈 Playbook 13.
+  # ------------------------------------------------------------------------
+
+    # - name: Update Roles and Services for the PPAN | {{ ise_ppan }}
+    #   delegate_to: localhost
+    #   ansible.builtin.uri:
+    #     url: "https://iseadmin01.securitydemo.net:443/api/v1/deployment/node/iseadmin01"
+    #     method: PUT
+    #     url_username: "{{ ise_username }}"
+    #     url_password: "{{ ise_password }}"
+    #     force_basic_auth: yes
+    #     body: '{ "roles": [ "PrimaryAdmin" ], "services": [] }'
+    #     status_code: 200,500
+    #     body_format: json
+    #     validate_certs: "{{ ise_verify }}"
+    #     return_content: true
+    #   register: response
+    #   failed_when: (response.status != 200) and (response.status != 500)
+
+  # ------------------------------------------------------------------------
+  # 💡Enable the following output for troubleshooting
+  # ------------------------------------------------------------------------
+
+    # - name: response
+    #   ansible.builtin.debug: var=response
+

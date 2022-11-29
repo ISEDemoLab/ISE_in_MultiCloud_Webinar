@@ -1,0 +1,52 @@
+---
+- name: Show ISE Version
+  hosts: ISE, ise_nodes # add the specific node groups from inventory files
+  gather_facts: no
+  vars_files:
+  - vars/main.yaml  
+  tasks:
+
+    #--------------------------------------------------------------------------
+    # 🛈 The `ansible-pylibssh` package is required to run this module.
+    # Un-comment the `Install ansible-pylibssh Package` task below to
+    # install it.
+    #--------------------------------------------------------------------------
+
+    # - name: Install ansible-pylibssh Package
+    #   delegate_to: localhost
+    #   ansible.builtin.pip:
+    #     name: ansible-pylibssh
+    #     executable: pip3
+
+    #--------------------------------------------------------------------------
+    # Connect to each node in the groups specified in `hosts` above
+    # and run the `show version` command using the specific login
+    # method in the inventory file(s).  Record the output with the
+    # `register` entry.
+    #--------------------------------------------------------------------------
+
+    - name: ISE CLI | show version
+      ansible.netcommon.cli_command:
+        command: show version
+      register: output
+
+    #--------------------------------------------------------------------------
+    # Show the contents of the `register` entry from above.
+    #--------------------------------------------------------------------------
+
+    - name: Show output
+      ansible.builtin.debug:
+        msg: "{{ output.stdout | replace('\n\n','\n') }}" # remove empty lines
+
+    #--------------------------------------------------------------------------
+    # ISE 3.2 uses a new CLI interface (ConfD) and does not require 
+    # an `exit` command at the end of tasks/playbooks.
+    #
+    # ISE 3.1 and older requires this, un-comment the following task
+    # to send the `exit` command.
+    #--------------------------------------------------------------------------
+
+    # ⚠ Add `exit` command for <= ISE 3.1. Not needed for ISE 3.2!
+    # - name: ISE CLI | exit
+    #   ansible.netcommon.cli_command:
+    #     command: exit

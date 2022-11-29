@@ -1,0 +1,156 @@
+---
+- name: Create ISE Deployment
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/main.yaml
+  tasks:
+  # ------------------------------------------------------------------------
+  # Unlike through the GUI, you can delete a populated node group
+  # with automation!
+  # ------------------------------------------------------------------------
+
+  - name: Delete Node Group WestUS
+    cisco.ise.node_group:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      state: absent
+      forceDelete: true
+      nodeGroupName: WestUS
+    ignore_errors: yes
+
+  - name: Delete Node Group EastUS
+    cisco.ise.node_group:
+      ise_hostname: "{{ ise_ppan }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      state: absent
+      forceDelete: true
+      nodeGroupName: EastUS
+    ignore_errors: yes
+
+  # ------------------------------------------------------------------------
+  # Secondary MnT Node
+  # ------------------------------------------------------------------------
+
+  - name: Remove ISE Node from the Deployment | SMnT
+    cisco.ise.node_deployment:
+      ise_hostname: "{{ ise_ppan }}" # ISE PAN
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      ise_debug: "{{ ise_debug }}"
+      state: absent
+      hostname: ise-hyperv # MUST use the hostname here, fqdn will fail!
+    register: ise_node_update
+    timeout: 600 # Default: 300. Stop checking after <seconds>
+    ignore_errors: yes
+
+  # ------------------------------------------------------------------------
+  # All other deployment PSNs. Services on PSNs can differ, but are
+  # usually enabled on pairs of PSNs for High Availability (HA).
+  # ------------------------------------------------------------------------
+
+  - name: Remove ISE Node from the Deployment | PSN2 + pxGrid + pxGridCloud
+    cisco.ise.node_deployment:
+      ise_hostname: "{{ ise_ppan }}" # ISE PAN
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      ise_debug: "{{ ise_debug }}"
+      state: absent
+      hostname: ise-oci # MUST use the hostname here, fqdn will fail!
+    register: ise_node_update
+    timeout: 600 # Default: 300. Stop checking after <seconds>
+    ignore_errors: yes
+
+  - name: Remove ISE Node from the Deployment | PSN3 + DeviceAdmin
+    cisco.ise.node_deployment:
+      ise_hostname: "{{ ise_ppan }}" # ISE PAN
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      ise_debug: "{{ ise_debug }}"
+      state: absent
+      hostname: ise-aws # MUST use the hostname here, fqdn will fail!
+    register: ise_node_update
+    timeout: 600 # Default: 300. Stop checking after <seconds>
+    ignore_errors: yes
+
+  - name: Remove ISE Node from the Deployment | PSN4 + DeviceAdmin
+    cisco.ise.node_deployment:
+      ise_hostname: "{{ ise_ppan }}" # ISE PAN
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      # ise_debug: "{{ ise_debug }}"
+      state: absent
+      hostname: ise-nutanix # MUST use the hostname here, fqdn will fail!
+    register: ise_node_update
+    timeout: 600 # Default: 300. Stop checking after <seconds>
+    ignore_errors: yes
+
+  # - ansible.builtin.debug: var=ise_node_update
+
+  - name: Verify All Nodes Deregistered from PPAN | {{ ise_ppan }}
+    # when: inventory_hostname == ise_ppan_name
+    cisco.ise.node_info:
+      ise_hostname: "{{ ise_ppan }}" # PPAN!
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify: "{{ ise_verify }}"
+      ise_debug: "{{ ise_debug }}"
+    register: node_info
+    until: node_info.ise_response | count == 4  # Back to pre-webinar deployment!
+    delay: 10 # Default: 0. seconds to delay between retries
+    retries: 180
+    timeout: 1800 # retries * delay. Default: 300. Stop checking after <seconds>
+
+  - name: Pause for 5 seconds for ISE to boot
+    ansible.builtin.pause:
+      seconds: 5
+
+  - name: Update Roles and Services for the PPAN | {{ ise_ppan }}
+    cisco.ise.personas_update_roles_services:
+      ip: 10.1.100.21 # PPAN!
+      ise_verify: "{{ ise_verify }}"
+      username: "{{ ise_username }}"
+      password: "{{ ise_password }}"
+      hostname: iseadmin01 # MUST use the hostname here, fqdn will fail!
+      roles: 
+      - PrimaryAdmin
+      - SecondaryMonitoring
+      services: 
+      - Session
+      - Profiler
+      - pxGrid
+      - pxGridCloud
+    register: ise_node_update
+
+  # ------------------------------------------------------------------------
+  # ⚠ Before I figured out that passing the FQDN in the `hostname` 
+  # ⚠ field would cause the module above to fail, I created a task
+  # ⚠ to accomplish the results I wanted using the API request.
+  # 🛈 I've left this in to show the format for initiating 
+  # 🛈 API requests through Ansible Playbooks.  The reverse is shown in
+  # 🛈 Playbook 08.
+  # ------------------------------------------------------------------------
+
+  # - name: Update Roles and Services for the PPAN | {{ ise_ppan }}
+  #   delegate_to: localhost
+  #   ansible.builtin.uri:
+  #     url: "https://iseadmin01.securitydemo.net:443/api/v1/deployment/node/iseadmin01"
+  #     method: PUT
+  #     url_username: "{{ ise_username }}"
+  #     url_password: "{{ ise_password }}"
+  #     force_basic_auth: yes
+  #     body: '{ "roles": [ "PrimaryAdmin","SecondaryMonitoring" ], "services": [ "Session","Profiler","pxGrid","pxGridCloud"] }'
+  #     status_code: 200,500
+  #     body_format: json
+  #     validate_certs: "{{ ise_verify }}"
+  #     return_content: true
+  #   register: response
+  #   failed_when: (response.status != 200) and (response.status != 500)

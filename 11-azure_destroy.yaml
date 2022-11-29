@@ -1,0 +1,34 @@
+---
+- name: Delete an Azure Resource Group
+  gather_facts: no
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/main.yaml
+
+  tasks:
+    #----------------------------------------------------------------------------
+    # Confirm Project!
+    #----------------------------------------------------------------------------
+
+    - name: Prompt for Project to Delete
+      ansible.builtin.pause:
+        prompt: "Project Name [{{ project_name | default('') }}]"
+      register: result
+
+    # - ansible.builtin.debug: var=result.user_input
+
+    - name: Set Project Name
+      when: result.user_input is defined and result.user_input | length > 0
+      ansible.builtin.set_fact:
+        project_name: "{{ result.user_input | trim }}"
+
+    # - ansible.builtin.debug: var=project_name
+
+    - name: Delete an Azure Resource Group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "rg_{{ project_name }}"
+        location: "{{ az_region }}"
+        force_delete_nonempty: yes
+        state: absent
+      register: rg
