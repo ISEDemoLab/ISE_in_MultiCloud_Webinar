@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "connections_name": {
+            "type": "String"
+        },
+        "virtualNetworkGateways_externalid": {
+            "type": "String"
+        },
+        "localNetworkGateways_externalid": {
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2022-01-01",
+            "name": "[parameters('connections_name')]",
+            "location": "westus",
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[parameters('virtualNetworkGateways_externalid')]",
+                    "properties": {}
+                },
+                "localNetworkGateway2": {
+                    "id": "[parameters('localNetworkGateways_externalid')]",
+                    "properties": {}
+                },
+                "connectionType": "IPsec",
+                "connectionProtocol": "IKEv2",
+                "routingWeight": 0,
+                "sharedKey": "ISEisC00L",
+                "enableBgp": false,
+                "useLocalAzureIpAddress": false,
+                "usePolicyBasedTrafficSelectors": false,
+                "ipsecPolicies": [],
+                "trafficSelectorPolicies": [],
+                "expressRouteGatewayBypass": false,
+                "dpdTimeoutSeconds": 0,
+                "connectionMode": "Default",
+                "gatewayCustomBgpIpAddresses": []
+            }
+        }
+    ]
+}

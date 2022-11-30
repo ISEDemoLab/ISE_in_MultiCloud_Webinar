@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "localNetworkGatewayName": {
+          "value": "CSR1000v"
+      },
+      "location": {
+          "value": "westus"
+      },
+      "addressPrefixes": {
+          "value": ["10.1.100.0/24"]
+      },
+      "gatewayIpAddress": {
+          "value": "<public_ip_of_your_router>"
+      }
+    }
+}

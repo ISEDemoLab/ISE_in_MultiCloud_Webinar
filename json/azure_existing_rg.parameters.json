@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westus"
+    },
+    "networkInterfaceName": {
+      "value": "ise-azure2-nic"
+    },
+    "subnetName": {
+      "value": "Production"
+    },
+    "virtualNetworkId": {
+      "value": "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/virtualNetworks/<vn_name>"
+    },
+    "privateIp": {
+      "value": "192.168.100.5"
+    },
+    "virtualMachineName": {
+      "value": "ise-azure2"
+    },
+    "virtualMachineComputerName": {
+      "value": "ise-azure2"
+    },
+    "virtualMachineRG": {
+      "value": "<resource_group_name>"
+    },
+    "osDiskType": {
+      "value": "Standard_LRS"
+    },
+    "osDiskDeleteOption": {
+      "value": "Delete"
+    },
+    "virtualMachineSize": {
+      "value": "Standard_D4s_v4"
+    },
+    "nicDeleteOption": {
+      "value": "Delete"
+    },
+    "adminUsername": {
+      "value": "azureuser"
+    },
+    "adminPublicKey": {
+      "value": "<rsa_public_key>"
+    },
+    "userData": {
+      "value": "<user_data_in_base64_format>"
+    },
+    "diagnosticsStorageAccountName": {
+      "value": "<existing_storage_account_name>"
+    },
+    "diagnosticsStorageAccountId": {
+      "value": "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<existing_storage_account_name>"
+    }
+  }
+}

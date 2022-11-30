@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "connections_name": {
+          "value": "Azure2CSR"
+      },
+      "virtualNetworkGateways_externalid": {
+          "value": "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/virtualNetworkGateways/<virtual_network_gateway_name>"
+      },
+      "localNetworkGateways_externalid": {
+          "value": "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/localNetworkGateways/<local_network_gateway_name>"
+      }
+    }
+}
