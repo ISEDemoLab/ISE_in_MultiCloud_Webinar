@@ -10,9 +10,9 @@ You may create groups based on
 - Where : a datacenter, region, local, storage, etc.
 - When : the development stage for prod, test, etc.
 
-For details on creating Ansible inventory files, see
-https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
-For common patterns for targeting inventory hosts and groups:
+For details on creating Ansible inventory files, see  
+https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html  
+For common patterns for targeting inventory hosts and groups:  
 https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
 
 ## Dynamic Inventory

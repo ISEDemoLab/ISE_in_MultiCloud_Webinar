@@ -3,7 +3,7 @@ This folder contains _sanitized_ JSON templates for the following Azure Resource
 
 |Template Name|Parameters File|Function|
 |---|---|---|
-|azuredeploy.json|azuredeploy.parameters.json|Deploy ISE 3.2 **Azure Application** from the Marketplace with a nic, private ip and public ip|
+|azuredeploy.json|azuredeploy.parameters.json|Deploy ISE 3.2 **Virtual Machine** from the Marketplace with a nic, private ip and public ip|
 |azure_lng.json|azure_lng.parameters.json|Create a Local Network Gateway|
 |azure_vpn.json|azure_vpn.parameters.json|Create a VPN connection from the Virtual Network Gateway to the Local Network Gateway|
 |azure_existing_rg.json|azure_existing_rg.parameters.json|Deploy ISE 3.2 **Virtual Machine** from Marketplace to an existing RG with an existing storage account|
