@@ -44,8 +44,8 @@
     - name: Deploy OVA to ESXi Server
       community.vmware.vmware_deploy_ovf:
         datastore: '{{ datastore }}'
-        name: "VMware-Ansible"
-        # name: chmoreto_ISE-Ansible
+        # name: "VMware-Ansible"
+        name: chmoreto_ISE-Ansible
         networks: "{u'VM Network':u'{{ ProvisioningNetworkLabel }}'}"
         power_on: no
         ovf: "/mnt/c/wsl/ISE-3.2.0.542-virtual-SNS3615-SNS3655-300.ova"

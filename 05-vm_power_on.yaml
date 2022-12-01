@@ -13,8 +13,8 @@
         username: "{{ esxi_username }}"
         password: "{{ esxi_password }}"
         validate_certs: false
-        name: "chmoreto_ISE-Ansible"
-        # name: "VMware-Ansible"
+        # name: "chmoreto_ISE-Ansible"
+        name: "VMware-Ansible"
         state: powered-on
 
     
