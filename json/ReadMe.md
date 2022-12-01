@@ -16,7 +16,7 @@ These templates are used due to the fact that
 
 While I am grateful that Azure allows for the templates as a workaround to these shortcomings, I would hope that they add modules to their collection that address them.  The templates add a LOT of unnecessary steps to the process.
 
-If you would like to create the ISE deployment from the first row of the table, but do not want a public IP address, comment out the following lines in the parameters file and the corresponding lines in the template file.
+If you would like to create the ISE deployment from the first row of the table, but do not want a public IP address, comment out (or delete) the following lines in the parameters file and the corresponding lines in the template file.
 ```
       // "publicIpAddressName": {
       //   "value": "ise32-d4s-ip"
@@ -30,6 +30,51 @@ If you would like to create the ISE deployment from the first row of the table, 
       // "pipDeleteOption": {
       //   "value": "Delete"
       // },
+```
+Also comment out (or delete) the following lines in the template file:
+```
+    "resources": [
+        {
+            "name": "[parameters('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2021-03-01",
+            "location": "[parameters('location')]",
+//            "dependsOn": [
+//                "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName'))]"
+//            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[parameters('privateIp')]",
+//                            "publicIpAddress": {
+//                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]",
+//                                "properties": {
+//                                    "deleteOption": "[parameters('pipDeleteOption')]"
+//                                }
+//                            }
+                        }
+                    }
+                ]
+            }
+        },
+//        {
+//            "name": "[parameters('publicIpAddressName')]",
+//            "type": "Microsoft.Network/publicIpAddresses",
+//            "apiVersion": "2020-08-01",
+//            "location": "[parameters('location')]",
+//            "properties": {
+//                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+//            },
+//            "sku": {
+//                "name": "[parameters('publicIpAddressSku')]"
+//            }
+//        },
 ```
 
 
