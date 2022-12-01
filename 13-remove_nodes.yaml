@@ -1,5 +1,5 @@
 ---
-- name: Create ISE Deployment
+- name: Remove Nodes from ISE Deployment & add Roles and Services to PPAN
   hosts: localhost
   gather_facts: no
   vars_files:
@@ -7,7 +7,7 @@
   tasks:
   # ------------------------------------------------------------------------
   # Unlike through the GUI, you can delete a populated node group
-  # with automation!
+  # with automation!  Set the `forceDelete` option to `true`
   # ------------------------------------------------------------------------
 
   - name: Delete Node Group WestUS
@@ -50,8 +50,7 @@
     ignore_errors: yes
 
   # ------------------------------------------------------------------------
-  # All other deployment PSNs. Services on PSNs can differ, but are
-  # usually enabled on pairs of PSNs for High Availability (HA).
+  # Remove the three PSNs that were added in Playbook 9
   # ------------------------------------------------------------------------
 
   - name: Remove ISE Node from the Deployment | PSN2 + pxGrid + pxGridCloud
@@ -109,7 +108,7 @@
     retries: 180
     timeout: 1800 # retries * delay. Default: 300. Stop checking after <seconds>
 
-  - name: Pause for 5 seconds for ISE to boot
+  - name: Pause for 5 seconds
     ansible.builtin.pause:
       seconds: 5
 
