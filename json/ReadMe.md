@@ -16,7 +16,7 @@ These templates are used due to the fact that
 
 While I am grateful that Azure allows for the templates as a workaround to these shortcomings, I would hope that they add modules to their collection that address them.  The templates add a LOT of unnecessary steps to the process.
 
-If you would like to create the ISE deployment from the first row of the table, but do not want a public IP address, comment out (or delete) the following lines in the parameters file and the corresponding lines in the template file.
+If you would like to create the ISE deployment from the first row of the table, but do not want a public IP address, delete the following lines in the parameters file and the corresponding lines in the template file. The lines to delete are marked with `//` in the text below.
 ```
       // "publicIpAddressName": {
       //   "value": "ise32-d4s-ip"
@@ -31,7 +31,7 @@ If you would like to create the ISE deployment from the first row of the table, 
       //   "value": "Delete"
       // },
 ```
-Also comment out (or delete) the following lines in the template file:
+Also delete the following lines in the template file (The lines to delete are marked with `//` in the text below.):
 ```
     "resources": [
         {
