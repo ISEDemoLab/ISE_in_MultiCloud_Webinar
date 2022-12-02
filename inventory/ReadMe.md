@@ -19,12 +19,14 @@ https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
 
 |Platform|Required filename|plugin used|
 |---|---|---|
-|AWS|`<name>.`aws_ec2.yaml|amazon.aws.aws_ec2|
-|Azure|`<name>.`azure_rm.yaml|azure.azcollection.azure_rm|
-|OCI|`<name>.`oci.yaml|oracle.oci.oci|
-|VMware|`<name>.`vmware.yaml|community.vmware.vmware_vm_inventory|
+|AWS|`[name]`aws_ec2.yaml|amazon.aws.aws_ec2|
+|Azure|`[name]`azure_rm.yaml|azure.azcollection.azure_rm|
+|OCI|`[name]`oci.yaml|oracle.oci.oci|
+|VMware|`[name]`vmware.yaml|community.vmware.vmware_vm_inventory|
 
-The important part of the inventory filenames is that they _**END**_ with the required part of the name.  the `<name>.` portion can be omitted and was done for `aws_ec2.yaml` and `azure_rm.yaml`. The filename extension can be either `.yaml` or `.yml` which is why it is sometimes noted as `.y[a]ml`.
+The important part of the inventory filenames is that they _**END**_ with the required part of the name.  the `[name]` portion can be omitted and was done for `aws_ec2.yaml` and `azure_rm.yaml`. The filename extension can be either `.yaml` or `.yml` which is why it is sometimes noted as `.y[a]ml`.
+
+In the examples below, I used OCI, but these parameters can be used for any Dynamic Inventory file.  You can look through the files I have and see that I am using them (minus `keyed_groups`) in all four.  `demo.vmware.yaml` does not use `keyed_groups` because I am connecting to ESXi and tags are only supported in vCenter Server.
 
 ### `keyed_groups`
 `keyed_groups` are used to assign the inventory in this platform to an `ansible-inventory` group.  These groups are shown with the command `ansible-inventory --graph` and can be a good way to keep track of certain aspects of your deployment.  There are three entries that can be used for each keyed group:
@@ -64,6 +66,8 @@ The expression above returns
 
 ### `compose`
 The `compose` section tell Ansible how to connect to the host.  Since DNS is such a major requirement for traffic on port 443 (and port 22 for that matter), connecting to ise-oci would return an error.  The sample below shows how to take the dynamic information gathered and generate a FQDN that can be used to connect.
+
+Since I am using the DNS Name to connect, this is the expression I use for my hosts. OCI uses `hostname_label`, this will be different for the other providers, but the idea remains the same.
 ```
 compose:
   ansible_host: hostname_label+'.securitydemo.net'

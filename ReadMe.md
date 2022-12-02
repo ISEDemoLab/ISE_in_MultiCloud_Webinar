@@ -135,7 +135,7 @@ or you may edit and source these variables from a file in your `~/.secrets` dire
 source ~/.secrets/azure.sh
 source ~/.secrets/aws.sh
 source ~/.secrets/vmware.sh
-source ~/.secrets/ise_cli.sh
+source ~/.secrets/ise.sh
 ```
 
 ## Variables
